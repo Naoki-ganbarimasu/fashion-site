@@ -1,105 +1,101 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import { Check, ChevronDown, ChevronUp, Filter } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger
-} from "@/components/ui/accordion";
+import { useState } from "react"
+import { Check, ChevronDown, ChevronUp, Filter } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Slider } from "@/components/ui/slider"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu";
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { categories, colors, sizes } from "@/lib/product-data"
+import type { ProductCategory, ProductColor, ProductSize } from "@/types"
 
-export function ProductFilters() {
-  const [priceRange, setPriceRange] = useState([0, 200]);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [selectedColors, setSelectedColors] = useState<string[]>([]);
-  const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
-  const [isFiltersVisible, setIsFiltersVisible] = useState(true);
+interface FilterState {
+  priceRange: [number, number]
+  categories: ProductCategory[]
+  colors: ProductColor[]
+  sizes: ProductSize[]
+}
 
-  const categories = ["tops", "bottoms", "outerwear", "dresses", "accessories"];
-  const colors = [
-    "black",
-    "white",
-    "gray",
-    "blue",
-    "red",
-    "brown",
-    "navy",
-    "burgundy",
-    "green",
-    "pink",
-    "floral"
-  ];
-  const sizes = [
-    "xs",
-    "s",
-    "m",
-    "l",
-    "xl",
-    "xxl",
-    "28",
-    "30",
-    "32",
-    "34",
-    "36"
-  ];
+interface ProductFiltersProps {
+  onFilterChange?: (filters: FilterState) => void
+}
 
-  const toggleCategory = (category: string) => {
-    setSelectedCategories((prev) =>
-      prev.includes(category)
-        ? prev.filter((c) => c !== category)
-        : [...prev, category]
-    );
-  };
-
-  const toggleColor = (color: string) => {
-    setSelectedColors((prev) =>
-      prev.includes(color) ? prev.filter((c) => c !== color) : [...prev, color]
-    );
-  };
-
-  const toggleSize = (size: string) => {
-    setSelectedSizes((prev) =>
-      prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size]
-    );
-  };
+export function ProductFilters({ onFilterChange }: ProductFiltersProps) {
+  const [isFiltersVisible, setIsFiltersVisible] = useState(true)
+  const [filters, setFilters] = useState<FilterState>({
+    priceRange: [0, 200],
+    categories: [],
+    colors: [],
+    sizes: [],
+  })
 
   const toggleFiltersVisibility = () => {
-    setIsFiltersVisible(!isFiltersVisible);
-  };
+    setIsFiltersVisible(!isFiltersVisible)
+  }
+
+  const updateFilters = <K extends keyof FilterState>(key: K, value: FilterState[K]) => {
+    const newFilters = { ...filters, [key]: value }
+    setFilters(newFilters)
+    onFilterChange?.(newFilters)
+  }
+
+  const toggleCategory = (category: ProductCategory) => {
+    const newCategories = filters.categories.includes(category)
+      ? filters.categories.filter((c) => c !== category)
+      : [...filters.categories, category]
+
+    updateFilters("categories", newCategories)
+  }
+
+  const toggleColor = (color: ProductColor) => {
+    const newColors = filters.colors.includes(color)
+      ? filters.colors.filter((c) => c !== color)
+      : [...filters.colors, color]
+
+    updateFilters("colors", newColors)
+  }
+
+  const toggleSize = (size: ProductSize) => {
+    const newSizes = filters.sizes.includes(size) ? filters.sizes.filter((s) => s !== size) : [...filters.sizes, size]
+
+    updateFilters("sizes", newSizes)
+  }
+
+  const resetFilters = () => {
+    const defaultFilters: FilterState = {
+      priceRange: [0, 200],
+      categories: [],
+      colors: [],
+      sizes: [],
+    }
+    setFilters(defaultFilters)
+    onFilterChange?.(defaultFilters)
+  }
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="font-medium text-lg flex items-center gap-2">
           <Filter className="h-5 w-5" />
-          Filters
+          フィルター
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={toggleFiltersVisibility}
-          className="flex items-center gap-1 sm:hidden"
-        >
+        <Button variant="ghost" size="sm" onClick={toggleFiltersVisibility} className="flex items-center gap-1">
           {isFiltersVisible ? (
             <>
               <ChevronUp className="h-4 w-4" />
-              <span className="text-sm">Hide</span>
+              <span className="text-sm">非表示</span>
             </>
           ) : (
             <>
               <ChevronDown className="h-4 w-4" />
-              <span className="text-sm">Show</span>
+              <span className="text-sm">表示</span>
             </>
           )}
         </Button>
@@ -107,58 +103,44 @@ export function ProductFilters() {
 
       {isFiltersVisible && (
         <>
-          <Accordion
-            type="single"
-            collapsible
-            className="w-full"
-            defaultValue="price"
-          >
+          <Accordion type="single" collapsible className="w-full" defaultValue="price">
             <AccordionItem value="price">
-              <AccordionTrigger className="text-sm font-medium">
-                Price Range
-              </AccordionTrigger>
+              <AccordionTrigger className="text-sm font-medium">価格帯</AccordionTrigger>
               <AccordionContent>
                 <div className="space-y-4 pt-2">
                   <Slider
                     defaultValue={[0, 200]}
                     max={500}
                     step={10}
-                    value={priceRange}
-                    onValueChange={setPriceRange}
+                    value={filters.priceRange}
+                    onValueChange={(value) => updateFilters("priceRange", value as [number, number])}
                   />
                   <div className="flex items-center justify-between">
-                    <span className="text-sm">${priceRange[0]}</span>
-                    <span className="text-sm">${priceRange[1]}</span>
+                    <span className="text-sm">${filters.priceRange[0]}</span>
+                    <span className="text-sm">${filters.priceRange[1]}</span>
                   </div>
                 </div>
               </AccordionContent>
             </AccordionItem>
 
             <AccordionItem value="category">
-              <AccordionTrigger className="text-sm font-medium">
-                Category
-              </AccordionTrigger>
+              <AccordionTrigger className="text-sm font-medium">カテゴリー</AccordionTrigger>
               <AccordionContent>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="w-full justify-between"
-                    >
-                      {selectedCategories.length === 0
-                        ? "Select categories"
-                        : `${selectedCategories.length} selected`}
+                    <Button variant="outline" className="w-full justify-between">
+                      {filters.categories.length === 0 ? "カテゴリーを選択" : `${filters.categories.length}個選択中`}
                       <ChevronDown className="h-4 w-4 opacity-50" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-56">
-                    <DropdownMenuLabel>Categories</DropdownMenuLabel>
+                    <DropdownMenuLabel>カテゴリー</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     {categories.map((category) => (
                       <DropdownMenuCheckboxItem
                         key={category}
-                        checked={selectedCategories.includes(category)}
-                        onCheckedChange={() => toggleCategory(category)}
+                        checked={filters.categories.includes(category as ProductCategory)}
+                        onCheckedChange={() => toggleCategory(category as ProductCategory)}
                         className="capitalize"
                       >
                         {category}
@@ -170,9 +152,7 @@ export function ProductFilters() {
             </AccordionItem>
 
             <AccordionItem value="color">
-              <AccordionTrigger className="text-sm font-medium">
-                Color
-              </AccordionTrigger>
+              <AccordionTrigger className="text-sm font-medium">カラー</AccordionTrigger>
               <AccordionContent>
                 <div className="grid grid-cols-3 gap-2">
                   {colors.map((color) => (
@@ -181,13 +161,11 @@ export function ProductFilters() {
                       variant="outline"
                       size="sm"
                       className={`justify-start capitalize ${
-                        selectedColors.includes(color) ? "bg-muted" : ""
+                        filters.colors.includes(color as ProductColor) ? "bg-muted" : ""
                       }`}
-                      onClick={() => toggleColor(color)}
+                      onClick={() => toggleColor(color as ProductColor)}
                     >
-                      {selectedColors.includes(color) && (
-                        <Check className="mr-1 h-4 w-4" />
-                      )}
+                      {filters.colors.includes(color as ProductColor) && <Check className="mr-1 h-4 w-4" />}
                       {color}
                     </Button>
                   ))}
@@ -196,9 +174,7 @@ export function ProductFilters() {
             </AccordionItem>
 
             <AccordionItem value="size">
-              <AccordionTrigger className="text-sm font-medium">
-                Size
-              </AccordionTrigger>
+              <AccordionTrigger className="text-sm font-medium">サイズ</AccordionTrigger>
               <AccordionContent>
                 <div className="grid grid-cols-3 gap-2">
                   {sizes.map((size) => (
@@ -207,9 +183,9 @@ export function ProductFilters() {
                       variant="outline"
                       size="sm"
                       className={`justify-center uppercase ${
-                        selectedSizes.includes(size) ? "bg-muted" : ""
+                        filters.sizes.includes(size as ProductSize) ? "bg-muted" : ""
                       }`}
-                      onClick={() => toggleSize(size)}
+                      onClick={() => toggleSize(size as ProductSize)}
                     >
                       {size}
                     </Button>
@@ -219,12 +195,14 @@ export function ProductFilters() {
             </AccordionItem>
           </Accordion>
 
-          <Button className="w-full mt-4">Apply Filters</Button>
-          <Button variant="outline" className="w-full">
-            Reset
+          <Button className="w-full mt-4" onClick={() => onFilterChange?.(filters)}>
+            フィルターを適用
+          </Button>
+          <Button variant="outline" className="w-full" onClick={resetFilters}>
+            リセット
           </Button>
         </>
       )}
     </div>
-  );
+  )
 }

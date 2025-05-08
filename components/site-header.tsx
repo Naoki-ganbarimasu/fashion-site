@@ -1,8 +1,8 @@
-import Link from "next/link";
-import { Search, ShoppingCart, Heart, User, Menu } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import Link from "next/link"
+import { Search, ShoppingCart, Heart, User, Menu } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 
 export function SiteHeader() {
   return (
@@ -67,11 +67,7 @@ export function SiteHeader() {
         <div className="ml-auto flex items-center space-x-4">
           <div className="hidden md:flex relative w-full max-w-sm items-center">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search products..."
-              className="pl-8 w-[200px] lg:w-[300px]"
-            />
+            <Input type="search" placeholder="Search products..." className="pl-8 w-[200px] lg:w-[300px]" />
           </div>
 
           <Button variant="ghost" size="icon" className="relative">
@@ -97,5 +93,5 @@ export function SiteHeader() {
         </div>
       </div>
     </header>
-  );
+  )
 }

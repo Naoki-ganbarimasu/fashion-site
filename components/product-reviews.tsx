@@ -1,106 +1,69 @@
-"use client";
+"use client"
 
-import type React from "react";
-
-import { useState } from "react";
-import { Star, ThumbsUp, ThumbsDown } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Progress } from "@/components/ui/progress";
-import { RatingStars } from "@/components/ui/rating-stars";
+import type React from "react"
+import { useState } from "react"
+import { Star, ThumbsUp, ThumbsDown } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Progress } from "@/components/ui/progress"
+import { RatingStars } from "@/components/ui/rating-stars"
+import { reviews, ratingDistribution } from "@/lib/product-data"
 
 interface ProductReviewsProps {
-  rating: number;
-  reviewCount: number;
+  productId: string
+  rating: number
+  reviewCount: number
+  onReviewSubmit?: (rating: number, text: string) => void
 }
 
-export function ProductReviews({ rating, reviewCount }: ProductReviewsProps) {
-  const [reviewText, setReviewText] = useState("");
-  const [userRating, setUserRating] = useState(0);
-
-  // Mock reviews data - in a real app, this would come from an API
-  const reviews = [
-    {
-      id: "1",
-      user: {
-        name: "Alex Johnson",
-        avatar: "/placeholder.svg?height=40&width=40"
-      },
-      rating: 5,
-      date: "2023-10-15",
-      title: "Excellent quality and fit",
-      content:
-        "I'm really impressed with the quality of this shirt. The fabric is soft yet durable, and the fit is perfect. I've already ordered another one in a different color.",
-      helpful: 12,
-      unhelpful: 2
-    },
-    {
-      id: "2",
-      user: {
-        name: "Sam Taylor",
-        avatar: "/placeholder.svg?height=40&width=40"
-      },
-      rating: 4,
-      date: "2023-09-28",
-      title: "Great shirt, slightly large",
-      content:
-        "The quality is excellent and the material feels premium. My only issue is that it runs slightly large. I'd recommend sizing down if you're between sizes.",
-      helpful: 8,
-      unhelpful: 1
-    },
-    {
-      id: "3",
-      user: {
-        name: "Jamie Smith",
-        avatar: "/placeholder.svg?height=40&width=40"
-      },
-      rating: 3,
-      date: "2023-09-10",
-      title: "Good but not great",
-      content:
-        "The shirt is decent quality, but I expected better for the price. The color is also slightly different from what's shown in the photos.",
-      helpful: 5,
-      unhelpful: 3
-    }
-  ];
-
-  // Calculate rating distribution
-  const ratingDistribution = [
-    { stars: 5, percentage: 65 },
-    { stars: 4, percentage: 20 },
-    { stars: 3, percentage: 10 },
-    { stars: 2, percentage: 3 },
-    { stars: 1, percentage: 2 }
-  ];
+export function ProductReviews({ productId, rating, reviewCount, onReviewSubmit }: ProductReviewsProps) {
+  const [reviewText, setReviewText] = useState("")
+  const [userRating, setUserRating] = useState(0)
+  const [helpfulClicks, setHelpfulClicks] = useState<Record<string, "helpful" | "unhelpful" | null>>({})
 
   const handleSubmitReview = (e: React.FormEvent) => {
-    e.preventDefault();
-    // In a real app, this would send the review to an API
-    alert(`Review submitted: ${userRating} stars, "${reviewText}"`);
-    setReviewText("");
-    setUserRating(0);
-  };
+    e.preventDefault()
+    if (onReviewSubmit) {
+      onReviewSubmit(userRating, reviewText)
+    } else {
+      // フォールバック処理
+      alert(`レビューを送信しました: ${userRating}星, "${reviewText}"`)
+    }
+    setReviewText("")
+    setUserRating(0)
+  }
+
+  const handleHelpfulClick = (reviewId: string, type: "helpful" | "unhelpful") => {
+    setHelpfulClicks((prev) => {
+      // すでに同じボタンがクリックされている場合は取り消し
+      if (prev[reviewId] === type) {
+        const newState = { ...prev }
+        delete newState[reviewId]
+        return newState
+      }
+      // 新しい評価を設定
+      return { ...prev, [reviewId]: type }
+    })
+  }
 
   return (
     <div className="space-y-8">
       <div className="grid md:grid-cols-2 gap-8">
         <div>
-          <h3 className="text-lg font-semibold mb-4">Customer Reviews</h3>
+          <h3 className="text-lg font-semibold mb-4">カスタマーレビュー</h3>
           <div className="flex items-center gap-4 mb-6">
             <div className="text-4xl font-bold">{rating.toFixed(1)}</div>
             <div>
               <RatingStars rating={rating} size="md" />
-              <p className="text-sm text-muted-foreground">
-                Based on {reviewCount} reviews
-              </p>
+              <p className="text-sm text-muted-foreground">{reviewCount}件のレビュー</p>
             </div>
           </div>
 
           <div className="space-y-2">
             {ratingDistribution.map((item) => (
               <div key={item.stars} className="flex items-center gap-2">
-                <div className="w-12 text-sm">{item.stars} stars</div>
+                <div className="w-12 text-sm">{item.stars}星</div>
                 <Progress value={item.percentage} className="h-2 flex-1" />
                 <div className="w-8 text-sm text-right">{item.percentage}%</div>
               </div>
@@ -109,24 +72,16 @@ export function ProductReviews({ rating, reviewCount }: ProductReviewsProps) {
         </div>
 
         <div>
-          <h3 className="text-lg font-semibold mb-4">Write a Review</h3>
+          <h3 className="text-lg font-semibold mb-4">レビューを書く</h3>
           <form onSubmit={handleSubmitReview} className="space-y-4">
             <div>
-              <div className="text-sm mb-2">Your Rating</div>
+              <div className="text-sm mb-2">評価</div>
               <div className="flex gap-1">
                 {[...Array(5)].map((_, i) => (
-                  <button
-                    title="Rate this product"
-                    key={i}
-                    type="button"
-                    onClick={() => setUserRating(i + 1)}
-                    className="focus:outline-none"
-                  >
+                  <button key={i} type="button" onClick={() => setUserRating(i + 1)} className="focus:outline-none">
                     <Star
                       className={`h-6 w-6 ${
-                        i < userRating
-                          ? "fill-primary text-primary"
-                          : "fill-muted text-muted-foreground"
+                        i < userRating ? "fill-primary text-primary" : "fill-muted text-muted-foreground"
                       }`}
                     />
                   </button>
@@ -136,44 +91,34 @@ export function ProductReviews({ rating, reviewCount }: ProductReviewsProps) {
 
             <div>
               <Textarea
-                placeholder="Share your thoughts about this product..."
+                placeholder="この商品についての感想を共有してください..."
                 value={reviewText}
                 onChange={(e) => setReviewText(e.target.value)}
                 className="min-h-[100px]"
               />
             </div>
 
-            <Button
-              type="submit"
-              disabled={userRating === 0 || !reviewText.trim()}
-            >
-              Submit Review
+            <Button type="submit" disabled={userRating === 0 || !reviewText.trim()}>
+              レビューを投稿
             </Button>
           </form>
         </div>
       </div>
 
       <div className="border-t pt-8">
-        <h3 className="text-lg font-semibold mb-6">Recent Reviews</h3>
+        <h3 className="text-lg font-semibold mb-6">最近のレビュー</h3>
         <div className="space-y-8">
           {reviews.map((review) => (
             <div key={review.id} className="border-b pb-6">
               <div className="flex justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <Avatar>
-                    <AvatarImage
-                      src={review.user.avatar}
-                      alt={review.user.name}
-                    />
-                    <AvatarFallback>
-                      {review.user.name.charAt(0)}
-                    </AvatarFallback>
+                    <AvatarImage src={review.user.avatar || "/placeholder.svg"} alt={review.user.name} />
+                    <AvatarFallback>{review.user.name.charAt(0)}</AvatarFallback>
                   </Avatar>
                   <div>
                     <div className="font-medium">{review.user.name}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {review.date}
-                    </div>
+                    <div className="text-sm text-muted-foreground">{review.date}</div>
                   </div>
                 </div>
                 <div className="flex">
@@ -185,14 +130,24 @@ export function ProductReviews({ rating, reviewCount }: ProductReviewsProps) {
               <p className="text-muted-foreground mb-4">{review.content}</p>
 
               <div className="flex items-center gap-4">
-                <span className="text-sm">Was this review helpful?</span>
-                <Button variant="outline" size="sm" className="h-8 gap-1">
+                <span className="text-sm">このレビューは参考になりましたか？</span>
+                <Button
+                  variant={helpfulClicks[review.id] === "helpful" ? "default" : "outline"}
+                  size="sm"
+                  className="h-8 gap-1"
+                  onClick={() => handleHelpfulClick(review.id, "helpful")}
+                >
                   <ThumbsUp className="h-4 w-4" />
-                  <span>{review.helpful}</span>
+                  <span>{review.helpful + (helpfulClicks[review.id] === "helpful" ? 1 : 0)}</span>
                 </Button>
-                <Button variant="outline" size="sm" className="h-8 gap-1">
+                <Button
+                  variant={helpfulClicks[review.id] === "unhelpful" ? "default" : "outline"}
+                  size="sm"
+                  className="h-8 gap-1"
+                  onClick={() => handleHelpfulClick(review.id, "unhelpful")}
+                >
                   <ThumbsDown className="h-4 w-4" />
-                  <span>{review.unhelpful}</span>
+                  <span>{review.unhelpful + (helpfulClicks[review.id] === "unhelpful" ? 1 : 0)}</span>
                 </Button>
               </div>
             </div>
@@ -200,5 +155,5 @@ export function ProductReviews({ rating, reviewCount }: ProductReviewsProps) {
         </div>
       </div>
     </div>
-  );
+  )
 }

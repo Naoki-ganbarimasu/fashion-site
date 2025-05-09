@@ -78,7 +78,9 @@ export function ProductReviews({ productId, rating, reviewCount, onReviewSubmit 
               <div className="text-sm mb-2">評価</div>
               <div className="flex gap-1">
                 {[...Array(5)].map((_, i) => (
-                  <button key={i} type="button" onClick={() => setUserRating(i + 1)} className="focus:outline-none">
+                  <button
+                    title="評価"
+                    key={i} type="button" onClick={() => setUserRating(i + 1)} className="focus:outline-none">
                     <Star
                       className={`h-6 w-6 ${
                         i < userRating ? "fill-primary text-primary" : "fill-muted text-muted-foreground"

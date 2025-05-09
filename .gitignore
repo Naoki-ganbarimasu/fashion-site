@@ -1,0 +1,17 @@
+# node_modules（npmパッケージ）
+node_modules/
+
+# 環境変数ファイル
+.env
+
+# ログファイル
+*.log
+
+# OSやIDEの一時ファイル
+.DS_Store
+*.swp
+
+# ビルド成果物
+.next/
+dist/
+out/
